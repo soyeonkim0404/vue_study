@@ -1,67 +1,76 @@
 <template>
-  <div id="app">
-    <div class="container">
-      <h1 class="text-center mb-4">todo list</h1>
-
-      <input type="text" class="form-control" v-model="userInput" @keyup.enter="addNewTodo">
-
-      <ul class="list-group mb-4">
-        <li class="list-group-item text-left" v-for="todo in activeTodoList" v-bind:key="todo.index" v-on:click="toggleTodoState(todo)">
-          {{ todo.label }}
-        </li>
-      </ul>
-
-      <div class="text-right">
-        <button type="button" class="btn btn-sm" v-on:click="changeCurrentState('active')">미래</button>
-        <button type="button" class="btn btn-sm" v-on:click="changeCurrentState('done')">과거</button>
-        <button type="button" class="btn btn-sm" v-on:click="changeCurrentState('all')">전체</button>
-      </div>
-    </div>
+<div id="app">
+  <div class="container col-sm-6 offset-md-3">
+    <TodoHeader v-on:addTodo="addTodo"></TodoHeader>
+    <TodoList v-bind:propsdata="todoItems" v-on:removeTodo="removeTodo"></TodoList>
+    <TodoFooter v-on:removeAll="clearAll"></TodoFooter>
   </div>
+</div>
 </template>
 
 <script>
+import TodoHeader from './components/TodoHeader';
+import TodoList from './components/TodoList';
+import TodoFooter from './components/TodoFooter';
 
 export default {
-  name: 'App',
   data() {
     return {
-      userInput: '',
-      todoList:[]
-    };
-  },
-  computed: {
-    activeTodoList() {
-      return this.todoList.filter(todo => this.currentState === 'all' || todo.state === this.currentState);
+      todoItems: [],
+      isActive: false
     }
   },
+  created() {
+      if(localStorage.length > 0){
+          for(let i = 0; i < localStorage.length; i++){
+              if(localStorage.key(i) != "loglevel:webpack-dev-server"){
+                  this.todoItems.push(localStorage.key(i));
+              }
+          }
+      }
+  },
   methods: {
-    changeCurrentState(state){
-      this.currentState = state;
+    addTodo(todoItem){
+      localStorage.setItem(todoItem, todoItem);
+      this.todoItems.push(todoItem);
     },
-    addNewTodo() {
-      this.todoList.push({
-        label : this.userInput,
-        state : 'active'
-      });
-      this.userInput = '';
+    removeTodo(todoItem, index){
+      localStorage.removeItem(todoItem);
+      this.todoItems.splice(index, 1);
     },
-    toggleTodoState(todo){
-      todo.state = todo.state === 'active' ? 'done' : 'active';
+    clearAll(){
+      localStorage.clear();
+      this.todoItems = [];
     }
   },
   components: {
+    'TodoHeader': TodoHeader,
+    'TodoList': TodoList,
+    'TodoFooter': TodoFooter
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
+body{
+background: #3E4651;
 }
+
+.hidden{
+position: absolute;
+visibility: hidden;
+text-indent: -9999px;
+}
+#app{
+font-family: 'Noto Sans KR', sans-serif;
+}
+
+.container{
+max-width: 40%;
+margin:1.5rem auto;
+padding:1.5rem 0;
+background: #00B5B5;
+}
+
 </style>
